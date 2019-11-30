@@ -10,6 +10,7 @@ set(CMAKE_CXX_CLANG_TIDY clang-tidy -checks=-*,readability-*)
 
 add_executable(almondbread ./src/main.cpp)
 
-# set(SOURCE_FILES ./src/main.cpp) find_package(SDL2 REQUIRED)
-# include_directories(${SDL2_INCLUDE_DIRS}) target_link_libraries(almondbread
-# SDL2)
+set(SOURCE_FILES ./src/main.cpp)
+find_package(SDL2 REQUIRED)
+include_directories(${SDL2_INCLUDE_DIRS})
+target_link_libraries(almondbread SDL2)
