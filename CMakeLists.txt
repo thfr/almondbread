@@ -16,7 +16,7 @@ set(SOURCE_FILES ./src/main.cpp ./src/Mandelbrot.hpp)
 
 add_executable(almondbread ${SOURCE_FILES})
 add_dependencies(almondbread SDL2-static)
-target_link_libraries(almondbread SDL2-static)
+target_link_libraries(almondbread SDL2-static pthread)
 
 enable_testing()
 find_package(GTest REQUIRED)

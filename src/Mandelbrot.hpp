@@ -5,7 +5,7 @@
 #include <cassert>
 #include <complex>
 #include <memory>
-#include <tuple>
+#include <thread>
 #include <vector>
 
 namespace almondbread {
@@ -76,7 +76,23 @@ public:
     }
 
 private:
-    void calcIterations()
+    /// Calculate the current view for each pixel
+    ///
+    /// Calculation is done via the iteration formula
+    ///   z[n+1] = z[n]^2 + c;
+    ///   z[0] = 0
+    ///   -> z[1] = c
+    ///
+    /// Simplify the calculation by extracting the real and the imaginary components
+    /// z[n+1] = ar + i * ai
+    /// z[n]   = br + i * bi
+    /// c      = cr + i * ci
+    ///
+    /// ar + i * ai = (br + i * bi) * (br + i * bi) + cr + i * ci
+    /// ar + i * ai = br^2 + i * 2 * br * bi - bi^2 + cr + i * ci
+    /// ar = br^2 - bi^2 + cr
+    /// ai = 2 * br * bi + ci
+    void calcIterations(size_t cpus = 4)
     {
         iterations.resize(currentView.xPixel * currentView.yPixel);
 
@@ -91,44 +107,52 @@ private:
         TFloatType imagStart = centerImag + rangeImag / 2.0;
         TFloatType imagStep  = -rangeImag / currentView.yPixel;
 
-        TFloatType imag = imagStart;
-        for (size_t row = 0; row < currentView.yPixel; ++row) {
-            // descending direction on the imaginary axis
-            TFloatType real = realStart;
-            for (size_t col = 0; col < currentView.xPixel; ++col) {
-                // ascending direction on the real axis
+        auto calcRows = [this, imagStep, imagStart, realStep, realStart](size_t startRow,
+                                                                         size_t lastRow) {
+            for (size_t row = startRow; row < lastRow; ++row) {
+                // descending direction on the imaginary axis
+                TFloatType imag = imagStart + row * imagStep;
+                TFloatType real = realStart;
+                for (size_t col = 0; col < currentView.xPixel; ++col) {
+                    // ascending direction on the real axis
 
-                // z[n+1] = z[n]^2 + c;
-                // z[0] = 0
-                // -> z[1] = c
-                //
-                // z[n+1] = ar + i * ai
-                // z[n]   = br + i * bi
-                // c      = cr + i * ci
-                //
-                // ar + i * ai = (br + i * bi) * (br + i * bi) + cr + i * ci
-                // ar + i * ai = br^2 + i * 2 * br * bi - bi^2 + cr + i * ci
-                // ar = br^2 - bi^2 + cr
-                // ai = 2 * br * bi + ci
-                TFloatType ar = real;  // z[1]
-                TFloatType ai = imag;  // z[1]
-                TFloatType cr = real;  // z[0]
-                TFloatType ci = imag;  // z[0]
+                    TFloatType ar = real;  // z[1]
+                    TFloatType ai = imag;  // z[1]
+                    TFloatType cr = real;  // z[0]
+                    TFloatType ci = imag;  // z[0]
 
 
-                size_t numIterations = 0;
-                while ((numIterations < currentView.maxIterations) &&
-                       ((ai * ai + ar * ar) <= 4.0)) {
-                    TFloatType br = ar;
-                    TFloatType bi = ai;
-                    ar            = br * br - bi * bi + cr;
-                    ai            = 2 * br * bi + ci;
-                    ++numIterations;
+                    size_t numIterations = 0;
+                    while ((numIterations < currentView.maxIterations) &&
+                           ((ai * ai + ar * ar) <= 4.0)) {
+                        TFloatType br = ar;
+                        TFloatType bi = ai;
+                        ar            = br * br - bi * bi + cr;
+                        ai            = 2 * br * bi + ci;
+                        ++numIterations;
+                    }
+                    iterations[row * currentView.xPixel + col] = numIterations;
+                    real += realStep;
                 }
-                iterations[row * currentView.xPixel + col] = numIterations;
-                real += realStep;
             }
-            imag += imagStep;
+        };
+
+        // threading
+        std::vector<std::thread> threads;
+        size_t rowsPerThread = currentView.yPixel / cpus;
+        for (size_t cpuNumber = 0; cpuNumber < cpus; ++cpuNumber) {
+            size_t startRow = cpuNumber * rowsPerThread;
+            if ((cpuNumber + 1) == cpus) {
+                threads.emplace_back(calcRows, startRow, currentView.yPixel);
+            }
+            else {
+                threads.emplace_back(calcRows, startRow, startRow + rowsPerThread);
+            }
+        }
+
+        // wait for all threads to finish
+        for (auto& t : threads) {
+            t.join();
         }
     };
 

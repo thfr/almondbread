@@ -67,6 +67,7 @@ int main()
             if (!(SDL_KEYDOWN == event.type)) {
                 continue;
             }
+
             switch (event.key.keysym.sym) {
             // ZOOM out:
             case SDLK_MINUS:
