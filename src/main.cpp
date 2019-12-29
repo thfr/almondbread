@@ -112,7 +112,7 @@ int main()
         }
 
         // calc mandelbrot
-        mb.renderToARGB8888(pixels, mbView);
+        mb.renderToARGB8888(pixels, mbView, 2 * SDL_GetCPUCount());
 
         SDL_UpdateTexture(texture, NULL, &pixels[0], texWidth * 4);
         SDL_RenderCopy(renderer, texture, NULL, NULL);

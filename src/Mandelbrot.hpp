@@ -38,14 +38,14 @@ template <typename TFloatType>
 class Mandelbrot
 {
 public:
-    void renderToARGB8888(std::vector<uint8_t>& pixels, ComplexView<TFloatType>& view)
+    void renderToARGB8888(std::vector<uint8_t>& pixels, ComplexView<TFloatType>& view, size_t cpus=1)
     {
         assert(pixels.size() == (4 * view.xPixel * view.yPixel));
 
         // calculate iterations
         if (view != currentView || !lastViewCalculated) {
             currentView = view;
-            calcIterations();
+            calcIterations(cpus);
             lastViewCalculated = true;
         }
 
@@ -92,7 +92,7 @@ private:
     /// ar + i * ai = br^2 + i * 2 * br * bi - bi^2 + cr + i * ci
     /// ar = br^2 - bi^2 + cr
     /// ai = 2 * br * bi + ci
-    void calcIterations(size_t cpus = 4)
+    void calcIterations(size_t cpus = 1)
     {
         iterations.resize(currentView.xPixel * currentView.yPixel);
 
