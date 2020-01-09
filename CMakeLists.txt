@@ -7,7 +7,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} -Wshadow -Werror -Wall -Wextra -pedantic")
+    "${CMAKE_CXX_FLAGS} -O3 -Wshadow -Werror -Wall -Wextra -pedantic")
 set(CMAKE_CXX_CLANG_TIDY clang-tidy -checks=-*,readability-*)
 
 add_subdirectory(./thirdparty/SDL2-2.0.10/)
