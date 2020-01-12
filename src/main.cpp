@@ -17,6 +17,14 @@
 using namespace std;
 using namespace almondbread;
 
+using complex_base_type = long double;
+
+bool check_precision(const complex_base_type a)
+{
+    const complex_base_type limit = 5.0e-15;
+    return abs(a) > limit;
+}
+
 int main()
 {
     // NOTE: this is a adapted example from https://stackoverflow.com/a/33312056
@@ -28,17 +36,17 @@ int main()
     }
     atexit(SDL_Quit);
 
-    const unsigned int texWidth  = 1024;
-    const unsigned int texHeight = 768;
-    const size_t maxIterations   = 1024;
-    const double realRange       = 3.0;
-    const double imagRange       = (texWidth > texHeight) ? realRange * texHeight / texWidth
-                                                    : realRange * texHeight / texWidth;
+    const unsigned int texWidth       = 1024;
+    const unsigned int texHeight      = 768;
+    const size_t maxIterations        = 1024;
+    const complex_base_type realRange = 3.0;
+    const complex_base_type imagRange = (texWidth > texHeight) ? realRange * texHeight / texWidth
+                                                               : realRange * texHeight / texWidth;
 
-    Mandelbrot<double> mb;
-    ComplexView<double> mbViewDefault{{-0.5, 0.0}, realRange, imagRange,
-                                      texWidth,    texHeight, maxIterations};
-    ComplexView<double> mbView = mbViewDefault;
+    Mandelbrot<complex_base_type> mb;
+    ComplexView<complex_base_type> mbViewDefault{{-0.5, 0.0}, realRange, imagRange,
+                                                 texWidth,    texHeight, maxIterations};
+    ComplexView<complex_base_type> mbView = mbViewDefault;
 
     auto window = SDL_CreateWindow("Almondbread", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                                    texWidth, texHeight, SDL_WINDOW_SHOWN);
@@ -77,25 +85,30 @@ int main()
                 break;
             // ZOOM in:
             case SDLK_PLUS:
-            case SDLK_KP_PLUS:
-                mbView.imagRange = 0.75 * mbView.imagRange;
-                mbView.realRange = 0.75 * mbView.realRange;
+            case SDLK_KP_PLUS: {
+                auto newImagRange = 0.75 * mbView.imagRange;
+                auto newRealRange = 0.75 * mbView.realRange;
+                if (check_precision(newImagRange) && check_precision(newRealRange)) {
+                    mbView.imagRange = newImagRange;
+                    mbView.realRange = newRealRange;
+                }
                 break;
+            }
             // move up:
             case SDLK_UP:
-                mbView.center += complex<double>{0, 0.25 * mbView.imagRange};
+                mbView.center += complex<complex_base_type>{0, 0.25 * mbView.imagRange};
                 break;
             // move down:
             case SDLK_DOWN:
-                mbView.center += complex<double>{0, -0.25 * mbView.imagRange};
+                mbView.center += complex<complex_base_type>{0, -0.25 * mbView.imagRange};
                 break;
             // move left:
             case SDLK_LEFT:
-                mbView.center += complex<double>{-0.25 * mbView.realRange, 0};
+                mbView.center += complex<complex_base_type>{-0.25 * mbView.realRange, 0};
                 break;
             // move right:
             case SDLK_RIGHT:
-                mbView.center += complex<double>{0.25 * mbView.realRange, 0};
+                mbView.center += complex<complex_base_type>{0.25 * mbView.realRange, 0};
                 break;
             case SDLK_0:
                 mbView.center    = mbViewDefault.center;
@@ -118,9 +131,9 @@ int main()
         SDL_RenderCopy(renderer, texture, NULL, NULL);
         SDL_RenderPresent(renderer);
 
-        const Uint64 end         = SDL_GetPerformanceCounter();
-        const static Uint64 freq = SDL_GetPerformanceFrequency();
-        const double seconds     = (end - start) / static_cast<double>(freq);
+        const Uint64 end                = SDL_GetPerformanceCounter();
+        const static Uint64 freq        = SDL_GetPerformanceFrequency();
+        const complex_base_type seconds = (end - start) / static_cast<complex_base_type>(freq);
         if (seconds > 0.1) {
             cout << "Frame time: " << seconds * 1000.0 << "ms" << endl;
         }
