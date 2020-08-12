@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.11)
-project(Almondbred)
+project(Almondbread)
 
 include(FetchContent)
 
@@ -10,25 +10,33 @@ set(CMAKE_CXX_FLAGS
 set(CMAKE_CXX_CLANG_TIDY clang-tidy -checks=-*,readability-*)
 
 # Application
-FetchContent_Declare(sdl2 URL https://www.libsdl.org/release/SDL2-2.0.12.tar.gz)
-FetchContent_MakeAvailable(sdl2)
+FetchContent_Declare(
+    sdl2
+    URL https://www.libsdl.org/release/SDL2-2.0.12.tar.gz
+)
+
+FetchContent_GetProperties(sdl2)
+if(NOT sdl2_POPULATED)
+    FetchContent_Populate(sdl2)
+    add_subdirectory(${sdl2_SOURCE_DIR} ${sdl2_BINARY_DIR})
+endif()
+# FetchContent_MakeAvailable(sdl2)
 
 set(SOURCE_FILES ./src/main.cpp ./src/Mandelbrot.hpp)
 
 add_executable(almondbread ${SOURCE_FILES})
-add_dependencies(almondbread SDL2-static)
-target_link_libraries(almondbread SDL2-static pthread)
+target_link_libraries(almondbread PRIVATE SDL2-static pthread)
 
 # Tests
 FetchContent_Declare(
     googletest
-    URL https://github.com/google/googletest/archive/release-1.10.0.tar.gz)
+    URL https://github.com/google/googletest/archive/release-1.10.0.tar.gz
+)
 FetchContent_MakeAvailable(googletest)
 
 add_executable(almondbreadtest ./test/AlmondbreadTest.cpp)
 target_include_directories(almondbreadtest PRIVATE ./src/)
-add_dependencies(almondbreadtest gtest gtest_main)
-target_link_libraries(almondbreadtest gtest gtest_main)
+target_link_libraries(almondbreadtest PRIVATE gtest gtest_main)
 
 enable_testing()
 add_test(NAME almondbreadtest COMMAND almondbreadtest)
