@@ -36,8 +36,8 @@ int main()
     }
     atexit(SDL_Quit);
 
-    const unsigned int texWidth       = 1024;
-    const unsigned int texHeight      = 768;
+    const unsigned int texWidth       = 1600;
+    const unsigned int texHeight      = 900;
     const size_t maxIterations        = 1024;
     const complex_base_type realRange = 3.0;
     const complex_base_type imagRange = (texWidth > texHeight) ? realRange * texHeight / texWidth
