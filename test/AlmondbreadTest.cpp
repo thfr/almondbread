@@ -9,11 +9,12 @@ using namespace std;
 
 size_t mandelbrotIterations(double real, double imag, size_t maxIter)
 {
+    constexpr double zMax = 2.0L;
     complex<double> c{real, imag};
     complex<double> cIter = c;
     size_t iterations     = 0;
 
-    while ((abs(cIter) <= 2.0) && iterations < maxIter) {
+    while ((abs(cIter) <= zMax) && iterations < maxIter) {
         ++iterations;
         cIter = (cIter * cIter) + c;
     }
@@ -23,8 +24,8 @@ size_t mandelbrotIterations(double real, double imag, size_t maxIter)
 void calcIterationsForComplexView(vector<size_t>& iterations, const ComplexView<double>& view)
 {
     iterations.resize(view.xPixel * view.yPixel);
-    double realStart = view.center.real() - view.realRange / 2.0;
-    double imagStart = view.center.imag() - view.imagRange / 2.0;
+    double realStart = view.center.real() - view.realRange / 2.0L;
+    double imagStart = view.center.imag() - view.imagRange / 2.0L;
     double realStep  = view.realRange / view.xPixel;
     double imagStep  = view.imagRange / view.yPixel;
 

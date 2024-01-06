@@ -25,7 +25,7 @@ bool check_precision(const complex_base_type a)
     return abs(a) > limit;
 }
 
-int main()
+int main(int /*argc*/, char ** /*argv*/)
 {
     // NOTE: this is a adapted example from https://stackoverflow.com/a/33312056
 
@@ -54,7 +54,7 @@ int main()
 
     auto renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     auto texture  = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
-                                     SDL_TEXTUREACCESS_STREAMING, texWidth, texHeight);
+                                      SDL_TEXTUREACCESS_STREAMING, texWidth, texHeight);
 
     vector<uint8_t> pixels(texWidth * texHeight * 4, SDL_ALPHA_OPAQUE);
 

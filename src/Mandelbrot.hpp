@@ -23,7 +23,10 @@ struct ComplexView
                (imagRange == cr.imagRange) && (xPixel == cr.xPixel) && (yPixel == cr.yPixel);
     };
 
-    bool operator!=(const ComplexView<Ttype>& cr) const { return !(cr == *this); };
+    bool operator!=(const ComplexView<Ttype>& cr) const
+    {
+        return !(cr == *this);
+    };
 
     std::complex<Ttype> center;
     Ttype realRange;
@@ -38,7 +41,8 @@ template <typename TFloatType>
 class Mandelbrot
 {
 public:
-    void renderToARGB8888(std::vector<uint8_t>& pixels, ComplexView<TFloatType>& view, size_t cpus=1)
+    void renderToARGB8888(std::vector<uint8_t>& pixels, ComplexView<TFloatType>& view,
+                          size_t cpus = 1)
     {
         assert(pixels.size() == (4 * view.xPixel * view.yPixel));
 
@@ -124,7 +128,7 @@ private:
 
                     size_t numIterations = 0;
                     while ((numIterations < currentView.maxIterations) &&
-                           ((ai * ai + ar * ar) <= 4.0)) {
+                           ((ai * ai + ar * ar) <= 2 * Z_MAX)) {
                         TFloatType br = ar;
                         TFloatType bi = ai;
                         ar            = br * br - bi * bi + cr;
@@ -157,9 +161,11 @@ private:
     };
 
 
-    ComplexView<TFloatType> currentView{{-0.5, 0.0}, 3.0, 2.0, 800, 600, 255};
+    ComplexView<TFloatType> currentView{{-0.5L, 0.0L}, 3.0L, 2.0L, 800, 600, 255};
     bool lastViewCalculated = false;
     std::vector<size_t> iterations{};
+
+    static constexpr TFloatType Z_MAX = 2.0L;
 };
 
 }  // namespace almondbread
